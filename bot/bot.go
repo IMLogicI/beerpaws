@@ -192,6 +192,8 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 
 			_, _ = s.ChannelMessageSend(m.ChannelID, "Правило удалено.")
+		case strings.HasPrefix(m.Content, consts.HelpPrefix):
+			_, _ = s.ChannelMessageSend(m.ChannelID, strings.Join(GetHelpMessage(m.Author.ID, userService), "\n"))
 		}
 	}
 }

@@ -9,4 +9,5 @@ const (
 	CloseRequestPrefix     = "!closeRequest"
 	GetMyPointsPrefix      = "!getMyPoints"
 	DeleteRulePrefix       = "!deleteRule"
+	HelpPrefix             = "!help"
 )
