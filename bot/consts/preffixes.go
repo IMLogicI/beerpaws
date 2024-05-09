@@ -8,4 +8,5 @@ const (
 	ApproveRequestPrefix   = "!approveRequest"
 	CloseRequestPrefix     = "!closeRequest"
 	GetMyPointsPrefix      = "!getMyPoints"
+	DeleteRulePrefix       = "!deleteRule"
 )

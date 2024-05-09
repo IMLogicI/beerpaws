@@ -24,6 +24,7 @@ type IPoints interface {
 	GetRequestByID(requestID int64) (*models.PointRequest, error)
 	CloseRequest(requestID int64) error
 	GetPointsByUserID(userID int64) (int64, error)
+	DeleteRule(ruleID int64) error
 }
 
 type PointsStorage struct {
@@ -174,4 +175,13 @@ func (pointsStorage *PointsStorage) GetPointsByUserID(userID int64) (int64, erro
 	}
 
 	return 0, nil
+}
+
+func (pointsStorage *PointsStorage) DeleteRule(ruleID int64) error {
+	_, err := pointsStorage.dbConn.Queryx(fmt.Sprintf(consts.DeleteRule, ruleID))
+	if err != nil {
+		return fmt.Errorf("delete rule: %w", err)
+	}
+
+	return nil
 }

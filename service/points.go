@@ -15,6 +15,7 @@ type IPointsService interface {
 	ApproveRequest(requestID int64) error
 	CloseRequest(requestID int64) error
 	GetPointsByUserID(userID int64) (int64, error)
+	DeleteRule(ruleID int64) error
 }
 
 type PointsService struct {
@@ -87,4 +88,8 @@ func (pointsService *PointsService) CloseRequest(requestID int64) error {
 
 func (pointsService *PointsService) GetPointsByUserID(userID int64) (int64, error) {
 	return pointsService.pointsStorage.GetPointsByUserID(userID)
+}
+
+func (pointsService *PointsService) DeleteRule(ruleID int64) error {
+	return pointsService.pointsStorage.DeleteRule(ruleID)
 }

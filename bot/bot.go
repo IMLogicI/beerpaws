@@ -172,6 +172,26 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 
 			_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("У вас на баллансе %d баллов", count))
+		case strings.HasPrefix(m.Content, consts.DeleteRulePrefix):
+			values := strings.Split(m.Content, " ")
+			if len(values) < 2 {
+				_, _ = s.ChannelMessageSend(m.ChannelID, "Введены не все параметры для этой команды!")
+				return
+			}
+
+			ruleID, err := strconv.Atoi(values[1])
+			if err != nil {
+				_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Введен неверный номер правила! : %v", err))
+				return
+			}
+
+			err = deleteRule(pointService, userService, m.Author.ID, int64(ruleID))
+			if err != nil {
+				_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Что-то пошло не так! : %v", err))
+				return
+			}
+
+			_, _ = s.ChannelMessageSend(m.ChannelID, "Правило удалено.")
 		}
 	}
 }
