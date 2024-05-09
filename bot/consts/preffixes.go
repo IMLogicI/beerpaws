@@ -1,6 +1,10 @@
 package consts
 
 const (
-	GetRulePreffix     = "!getRules"
-	MakeRequestPreffix = "!makeRequest"
+	GetRulePrefix          = "!getPointRules"
+	MakeRequestPrefix      = "!makeEarnRequest"
+	AddRulePrefix          = "!addEarnRule"
+	ViewOpenRequestsPrefix = "!viewOpenRequests"
+	ApproveRequestPrefix   = "!approveRequest"
+	CloseRequestPrefix     = "!closeRequest"
 )

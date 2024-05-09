@@ -14,4 +14,5 @@ const (
 	NicknameField       = "nickname"
 	DiscordIDField      = "discord_id"
 	PasswordField       = "password"
+	RoleNameField       = "role_name"
 )

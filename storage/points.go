@@ -14,6 +14,12 @@ type IPoints interface {
 	GetPointsRules() ([]models.PointRule, error)
 	MakePointRequest(pointRequest models.PointRequest) error
 	GetPointsRuleByID(ruleID int64) error
+	AddNewRule(newRule models.PointRule) error
+	GetOpenedRequests() ([]models.PointRequestForUser, error)
+	ApproveRequest(requestID int64) error
+	AddPoints(pointsAdding models.PointHistory) error
+	GetRequestByID(requestID int64) (*models.PointRequest, error)
+	CloseRequest(requestID int64) error
 }
 
 type PointsStorage struct {
@@ -71,4 +77,82 @@ func (pointsStorage *PointsStorage) GetPointsRuleByID(ruleID int64) error {
 	}
 
 	return errors.New("unknown rule")
+}
+
+func (pointsStorage *PointsStorage) AddNewRule(newRule models.PointRule) error {
+	_, err := pointsStorage.dbConn.Queryx(fmt.Sprintf("%s (%d,'%s','%s',%v)", consts.AddNewRule, newRule.Count, newRule.Name, newRule.Description, newRule.IsEarned))
+	if err != nil {
+		return fmt.Errorf("add new rule: %w", err)
+	}
+
+	return nil
+}
+
+func (pointsStorage *PointsStorage) GetOpenedRequests() ([]models.PointRequestForUser, error) {
+	rows, err := pointsStorage.dbConn.Queryx(consts.GetOpenedRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	requests := make([]models.PointRequestForUser, 0)
+	for rows.Next() {
+		var request models.PointRequestForUser
+		if err := rows.StructScan(&request); err != nil {
+			return nil, err
+		}
+		requests = append(requests, request)
+	}
+
+	// Check for errors from iterating over rows.
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return requests, nil
+}
+
+func (pointsStorage *PointsStorage) ApproveRequest(requestID int64) error {
+	_, err := pointsStorage.dbConn.Queryx(fmt.Sprintf("%s%d", consts.ApproveRequest, requestID))
+	if err != nil {
+		return fmt.Errorf("approve request: %w", err)
+	}
+
+	return nil
+}
+
+func (pointsStorage *PointsStorage) CloseRequest(requestID int64) error {
+	_, err := pointsStorage.dbConn.Queryx(fmt.Sprintf("%s%d", consts.CloseRequest, requestID))
+	if err != nil {
+		return fmt.Errorf("close request: %w", err)
+	}
+
+	return nil
+}
+
+func (pointsStorage *PointsStorage) AddPoints(pointsAdding models.PointHistory) error {
+	_, err := pointsStorage.dbConn.Queryx(fmt.Sprintf(consts.AddPoints, pointsAdding.RequestID, pointsAdding.Time))
+	if err != nil {
+		return fmt.Errorf("add points: %w", err)
+	}
+
+	return nil
+}
+
+func (pointsStorage *PointsStorage) GetRequestByID(requestID int64) (*models.PointRequest, error) {
+	rows, err := pointsStorage.dbConn.Queryx(fmt.Sprintf(consts.GetRequestByID, requestID))
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var request models.PointRequest
+		err := rows.StructScan(&request)
+		return &request, err
+	}
+
+	return nil, nil
 }

@@ -5,4 +5,5 @@ type User struct {
 	Nickname  string `db:"nickname"`
 	DiscordID string `db:"discord_id"`
 	Password  string `db:"password"`
+	Role      string `db:"role_name"`
 }

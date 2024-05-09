@@ -4,13 +4,16 @@ import (
 	"beerpaws/bot/consts"
 	"beerpaws/config"
 	"beerpaws/service"
-	"encoding/json"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
+)
+
+const (
+	ruleChunkSize = 10
 )
 
 var (
@@ -47,17 +50,26 @@ func Run(pService *service.PointsService, uService *service.UserService) {
 func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.ID != BotID {
 		switch {
-		case strings.HasPrefix(m.Content, consts.GetRulePreffix):
-			rules, err := pointService.GetPointsRules()
+		case strings.HasPrefix(m.Content, consts.GetRulePrefix):
+			rules, err := getRules(pointService)
 			if err != nil {
 				log.Println(err)
 				return
 			}
 
-			j, _ := json.Marshal(rules)
+			message := strings.Builder{}
+			for i, rule := range rules {
+				message.WriteString(fmt.Sprintf("Номер правила : %d . %s (%s). %d очков\n", rule.ID, rule.Name, rule.Description, rule.Count))
+				if (i+1)%ruleChunkSize == 0 {
+					_, _ = s.ChannelMessageSend(m.ChannelID, message.String())
+					message = strings.Builder{}
+				}
+			}
 
-			_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s", string(j)))
-		case strings.HasPrefix(m.Content, consts.MakeRequestPreffix):
+			if message.Len() > 0 {
+				_, _ = s.ChannelMessageSend(m.ChannelID, message.String())
+			}
+		case strings.HasPrefix(m.Content, consts.MakeRequestPrefix):
 			values := strings.Split(m.Content, " ")
 			if len(values) < 3 {
 				_, _ = s.ChannelMessageSend(m.ChannelID, "Введены не все параметры для этой команды!")
@@ -77,6 +89,82 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 			} else {
 				_, _ = s.ChannelMessageSend(m.ChannelID, "Запрос отправлен!")
 			}
+		case strings.HasPrefix(m.Content, consts.AddRulePrefix):
+			values := strings.Split(m.Content, " ; ")
+			if len(values) < 4 {
+				_, _ = s.ChannelMessageSend(m.ChannelID, "Введены не все параметры для этой команды!")
+				return
+			}
+
+			count, err := strconv.Atoi(values[1])
+			if err != nil {
+				_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Введена неверная сумма баллов! : %v", err))
+				return
+			}
+
+			err = makeNewRule(pointService, userService, m.Author.ID, int64(count), values[2], values[3])
+			if err != nil {
+				_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Что-то пошло не так! : %v", err))
+				return
+			}
+
+			_, _ = s.ChannelMessageSend(m.ChannelID, "Новое правило начисления очков добавлено!")
+		case strings.HasPrefix(m.Content, consts.ViewOpenRequestsPrefix):
+			requests, err := getOpenedRequests(pointService, userService, m.Author.ID)
+			if err != nil {
+				_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Что-то пошло не так! : %v", err))
+				return
+			}
+
+			for _, request := range requests {
+				_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Номер запроса: %d\n Создатель: @%s\n За что: %s\n Ссылка на скрин: %s\n Подтверждено: %v",
+					request.ID,
+					request.UserName,
+					request.RuleName,
+					request.ScreenshotLink,
+					request.Approved))
+			}
+		case strings.HasPrefix(m.Content, consts.ApproveRequestPrefix):
+			values := strings.Split(m.Content, " ")
+			if len(values) < 2 {
+				_, _ = s.ChannelMessageSend(m.ChannelID, "Введены не все параметры для этой команды!")
+				return
+			}
+
+			requestNumber, err := strconv.Atoi(values[1])
+			if err != nil {
+				_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Введен неверный номер запроса! : %v", err))
+				return
+			}
+
+			err = approveRequest(pointService, userService, m.Author.ID, int64(requestNumber))
+			if err != nil {
+				_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Что-то пошло не так! : %v", err))
+				return
+			}
+
+			_, _ = s.ChannelMessageSend(m.ChannelID, "Запрос подтвержден! Чтобы очки начислились, закройте его.")
+		case strings.HasPrefix(m.Content, consts.CloseRequestPrefix):
+			values := strings.Split(m.Content, " ")
+			if len(values) < 2 {
+				_, _ = s.ChannelMessageSend(m.ChannelID, "Введены не все параметры для этой команды!")
+				return
+			}
+
+			requestNumber, err := strconv.Atoi(values[1])
+			if err != nil {
+				_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Введен неверный номер запроса! : %v", err))
+				return
+			}
+
+			err = closeRequest(pointService, userService, m.Author.ID, int64(requestNumber))
+			if err != nil {
+				_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Что-то пошло не так! : %v", err))
+				return
+			}
+
+			_, _ = s.ChannelMessageSend(m.ChannelID, "Запрос закрыт.")
+
 		}
 	}
 }

@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"beerpaws/domain"
 	"beerpaws/storage/consts"
 	"beerpaws/storage/models"
 	"fmt"
@@ -41,7 +42,7 @@ func (usersStorage *UserStorage) GetUserByDiscordID(discordID string) (*models.U
 }
 
 func (usersStorage *UserStorage) SaveUserFromDiscord(discordID string, discordName string) error {
-	_, err := usersStorage.dbConn.Queryx(fmt.Sprintf("%s ('%s','%s','%s')", consts.SaveUserFromDiscord, discordName, discordID, discordName))
+	_, err := usersStorage.dbConn.Queryx(fmt.Sprintf("%s ('%s','%s','%s', '%s')", consts.SaveUserFromDiscord, discordName, discordID, discordName, domain.AccessUser))
 	if err != nil {
 		return fmt.Errorf("save user from discord: %w", err)
 	}
