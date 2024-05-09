@@ -1,0 +1,9 @@
+{
+  "token": "MTIzNzg4MjczOTI0NDQwNDgxNg.GNBaID.nhoaiPGh8gODhnVQHa780_Jp1WlKAH0KHrzXkQ",
+  "prefix": "!",
+  "host": "localhost",
+  "port": 5432,
+  "user": "postgres",
+  "password": "2522",
+  "dbname": "postgres"
+}
