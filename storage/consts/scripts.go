@@ -15,4 +15,6 @@ var (
 	CloseRequest        = "update request_point set closed = true \nwhere id = "
 	GetPoints           = "select sum(pr.count) from point_history ph \njoin request_point rp2 on rp2.id = ph.request_id \njoin point_rules pr on pr.id = rp2.rule_id \nwhere rp2.user_id  = %d"
 	DeleteRule          = "delete from point_rules where id=%d"
+	GetAdditionalPoints = "select additional_points_cnt from additional_points ap where ap.user_id = %d"
+	SetAdditionalPoints = "INSERT INTO additional_points (user_id, additional_points_cnt) VALUES(%d,%d) \nON CONFLICT (user_id) \ndo update set additional_points_cnt  = %d"
 )

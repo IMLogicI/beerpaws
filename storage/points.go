@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"log"
 )
 
 const (
@@ -162,9 +163,39 @@ func (pointsStorage *PointsStorage) GetRequestByID(requestID int64) (*models.Poi
 }
 
 func (pointsStorage *PointsStorage) GetPointsByUserID(userID int64) (int64, error) {
+	additionalPoints, err := pointsStorage.GetAdditionalPointsFromUserID(userID)
+	if err != nil {
+		log.Printf("get additional points: %v", err)
+	}
+
 	rows, err := pointsStorage.dbConn.Queryx(fmt.Sprintf(consts.GetPoints, userID))
 	if err != nil {
 		return 0, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var count int64
+		err := rows.Scan(&count)
+		return count + additionalPoints, err
+	}
+
+	return additionalPoints, nil
+}
+
+func (pointsStorage *PointsStorage) DeleteRule(ruleID int64) error {
+	_, err := pointsStorage.dbConn.Queryx(fmt.Sprintf(consts.DeleteRule, ruleID))
+	if err != nil {
+		return fmt.Errorf("delete rule: %w", err)
+	}
+
+	return nil
+}
+
+func (pointsStorage *PointsStorage) GetAdditionalPointsFromUserID(user int64) (int64, error) {
+	rows, err := pointsStorage.dbConn.Queryx(fmt.Sprintf(consts.GetAdditionalPoints, user))
+	if err != nil {
+		return 0, fmt.Errorf("get additional points: %w", err)
 	}
 
 	defer rows.Close()
@@ -177,10 +208,15 @@ func (pointsStorage *PointsStorage) GetPointsByUserID(userID int64) (int64, erro
 	return 0, nil
 }
 
-func (pointsStorage *PointsStorage) DeleteRule(ruleID int64) error {
-	_, err := pointsStorage.dbConn.Queryx(fmt.Sprintf(consts.DeleteRule, ruleID))
+func (pointsStorage *PointsStorage) SetAdditionalPoints(userID int64, count int64) error {
+	additionalPoints, err := pointsStorage.GetAdditionalPointsFromUserID(userID)
 	if err != nil {
-		return fmt.Errorf("delete rule: %w", err)
+		log.Printf("get additional points: %v", err)
+	}
+
+	_, err = pointsStorage.dbConn.Queryx(fmt.Sprintf(consts.SetAdditionalPoints, userID, count, count+additionalPoints))
+	if err != nil {
+		return fmt.Errorf("get additional points: %w", err)
 	}
 
 	return nil

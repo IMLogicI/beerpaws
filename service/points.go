@@ -93,3 +93,7 @@ func (pointsService *PointsService) GetPointsByUserID(userID int64) (int64, erro
 func (pointsService *PointsService) DeleteRule(ruleID int64) error {
 	return pointsService.pointsStorage.DeleteRule(ruleID)
 }
+
+func (pointsService *PointsService) SetAdditionalPoints(userID int64, count int64) error {
+	return pointsService.pointsStorage.SetAdditionalPoints(userID, count)
+}

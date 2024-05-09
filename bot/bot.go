@@ -194,6 +194,33 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 			_, _ = s.ChannelMessageSend(m.ChannelID, "Правило удалено.")
 		case strings.HasPrefix(m.Content, consts.HelpPrefix):
 			_, _ = s.ChannelMessageSend(m.ChannelID, strings.Join(GetHelpMessage(m.Author.ID, userService), "\n"))
+		case strings.HasPrefix(m.Content, consts.SetAdditionalPointPrefix):
+			values := strings.Split(m.Content, " ")
+			if len(values) < 3 {
+				_, _ = s.ChannelMessageSend(m.ChannelID, "Введены не все параметры для этой команды!")
+				return
+			}
+
+			count, err := strconv.Atoi(values[1])
+			if err != nil {
+				_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Введено неверное кол-во баллов! : %v", err))
+				return
+			}
+
+			err = setAdditionalPoints(pointService, userService, m.Author.ID, values[2], int64(count))
+			if err != nil {
+				_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Что-то пошло не так! : %v", err))
+				return
+			}
+
+			_, _ = s.ChannelMessageSend(m.ChannelID, "Дополнительные очки начислены.")
+		case strings.HasPrefix(m.Content, consts.RegisterPrefix):
+			err := register(m.Author.ID, m.Author.Username, userService)
+			if err != nil {
+				_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Что-то пошло не так! : %v", err))
+				return
+			}
+			_, _ = s.ChannelMessageSend(m.ChannelID, "Вы зарегистрированы в системе")
 		}
 	}
 }
