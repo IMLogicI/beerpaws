@@ -7,7 +7,10 @@ import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"log"
+)
+
+const (
+	timeLayout = "2006-01-02 15:04:05"
 )
 
 type IPoints interface {
@@ -20,6 +23,7 @@ type IPoints interface {
 	AddPoints(pointsAdding models.PointHistory) error
 	GetRequestByID(requestID int64) (*models.PointRequest, error)
 	CloseRequest(requestID int64) error
+	GetPointsByUserID(userID int64) (int64, error)
 }
 
 type PointsStorage struct {
@@ -56,7 +60,7 @@ func (pointsStorage *PointsStorage) GetPointsRules() ([]models.PointRule, error)
 }
 
 func (pointsStorage *PointsStorage) MakePointRequest(pointRequest models.PointRequest) error {
-	_, err := pointsStorage.dbConn.Queryx(fmt.Sprintf("%s (%d,%d,'%s')", consts.MakeRequest, pointRequest.RuleID, pointRequest.UserID, pointRequest.ScreenshotLink))
+	_, err := pointsStorage.dbConn.Queryx(fmt.Sprintf("%s (%d,%d,'%s',%v,%v)", consts.MakeRequest, pointRequest.RuleID, pointRequest.UserID, pointRequest.ScreenshotLink, false, false))
 	if err != nil {
 		return fmt.Errorf("make point request: %w", err)
 	}
@@ -65,7 +69,6 @@ func (pointsStorage *PointsStorage) MakePointRequest(pointRequest models.PointRe
 }
 
 func (pointsStorage *PointsStorage) GetPointsRuleByID(ruleID int64) error {
-	log.Printf("%s WHERE '%s'=%d", consts.GetRules, consts.RuleIDField, ruleID)
 	rows, err := pointsStorage.dbConn.Queryx(fmt.Sprintf("%s WHERE \"%s\"=%d", consts.GetRules, consts.IDField, ruleID))
 	if err != nil {
 		return err
@@ -132,7 +135,7 @@ func (pointsStorage *PointsStorage) CloseRequest(requestID int64) error {
 }
 
 func (pointsStorage *PointsStorage) AddPoints(pointsAdding models.PointHistory) error {
-	_, err := pointsStorage.dbConn.Queryx(fmt.Sprintf(consts.AddPoints, pointsAdding.RequestID, pointsAdding.Time))
+	_, err := pointsStorage.dbConn.Queryx(fmt.Sprintf(consts.AddPoints, pointsAdding.RequestID, pointsAdding.Time.Format(timeLayout)))
 	if err != nil {
 		return fmt.Errorf("add points: %w", err)
 	}
@@ -155,4 +158,20 @@ func (pointsStorage *PointsStorage) GetRequestByID(requestID int64) (*models.Poi
 	}
 
 	return nil, nil
+}
+
+func (pointsStorage *PointsStorage) GetPointsByUserID(userID int64) (int64, error) {
+	rows, err := pointsStorage.dbConn.Queryx(fmt.Sprintf(consts.GetPoints, userID))
+	if err != nil {
+		return 0, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var count int64
+		err := rows.Scan(&count)
+		return count, err
+	}
+
+	return 0, nil
 }

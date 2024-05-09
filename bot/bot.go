@@ -164,7 +164,14 @@ func messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 			}
 
 			_, _ = s.ChannelMessageSend(m.ChannelID, "Запрос закрыт.")
+		case strings.HasPrefix(m.Content, consts.GetMyPointsPrefix):
+			count, err := getPointsByDiscordID(m.Author.ID, pointService, userService)
+			if err != nil {
+				_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Что-то пошло не так! : %v", err))
+				return
+			}
 
+			_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("У вас на баллансе %d баллов", count))
 		}
 	}
 }

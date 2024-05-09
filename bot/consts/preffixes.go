@@ -7,4 +7,5 @@ const (
 	ViewOpenRequestsPrefix = "!viewOpenRequests"
 	ApproveRequestPrefix   = "!approveRequest"
 	CloseRequestPrefix     = "!closeRequest"
+	GetMyPointsPrefix      = "!getMyPoints"
 )

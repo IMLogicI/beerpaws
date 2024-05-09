@@ -14,6 +14,7 @@ type IPointsService interface {
 	GetOpenedRequests() ([]models.PointRequestForUser, error)
 	ApproveRequest(requestID int64) error
 	CloseRequest(requestID int64) error
+	GetPointsByUserID(userID int64) (int64, error)
 }
 
 type PointsService struct {
@@ -82,4 +83,8 @@ func (pointsService *PointsService) CloseRequest(requestID int64) error {
 	}
 
 	return pointsService.pointsStorage.CloseRequest(requestID)
+}
+
+func (pointsService *PointsService) GetPointsByUserID(userID int64) (int64, error) {
+	return pointsService.pointsStorage.GetPointsByUserID(userID)
 }
