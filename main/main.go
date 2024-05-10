@@ -25,8 +25,9 @@ func main() {
 	pointService := service.NewPointsService(pointStorage)
 	userStorage := storage.NewUserStorage(dbConn)
 	userService := service.NewUserService(userStorage)
+	botSrv := bot.NewBot(pointService, userService)
 
-	bot.Run(pointService, userService)
+	botSrv.Run()
 	<-make(chan struct{})
 	return
 }

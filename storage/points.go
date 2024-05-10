@@ -26,6 +26,8 @@ type IPoints interface {
 	CloseRequest(requestID int64) error
 	GetPointsByUserID(userID int64) (int64, error)
 	DeleteRule(ruleID int64) error
+	GetAdditionalPointsFromUserID(user int64) (int64, error)
+	SetAdditionalPoints(userID int64, count int64) error
 }
 
 type PointsStorage struct {

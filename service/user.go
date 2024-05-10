@@ -6,12 +6,12 @@ import (
 )
 
 type IUserService interface {
-	GetUserByDiscordID(discordID int64) (*models.User, error)
-	SaveUserFromDiscord(discordID int64, discordName string) error
+	GetUserByDiscordID(discordID string) (*models.User, error)
+	SaveUserFromDiscord(discordID string, discordName string) error
 }
 
 type UserService struct {
-	userStorage *storage.UserStorage
+	userStorage storage.IUser
 }
 
 func NewUserService(userStorage *storage.UserStorage) *UserService {

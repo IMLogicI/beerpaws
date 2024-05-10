@@ -1,7 +1,8 @@
 package bot
 
 import (
-	"beerpaws/service"
+	"github.com/bwmarrin/discordgo"
+	"strings"
 )
 
 var (
@@ -20,10 +21,11 @@ var (
 	}
 )
 
-func GetHelpMessage(discordID string, userService *service.UserService) []string {
-	if !isAdmin(userService, discordID) {
-		return userHelp
+func (b *Bot) GetHelpMessageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
+	helps := userHelp
+	if b.isAdmin(m.Author.ID) {
+		helps = append(helps, adminHelp...)
 	}
 
-	return append(userHelp, adminHelp...)
+	_, _ = s.ChannelMessageSend(m.ChannelID, strings.Join(helps, "\n"))
 }
