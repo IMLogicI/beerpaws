@@ -1,9 +1,9 @@
 {
-  "token": "MTIzNzg4MjczOTI0NDQwNDgxNg.GNBaID.nhoaiPGh8gODhnVQHa780_Jp1WlKAH0KHrzXkQ",
+  "token": "MTIzNzg4MjczOTI0NDQwNDgxNg.GXn1tP.GcQILB_PiUn75wLk3cD8HRum6Zn6fIYOUzQrA4",
   "prefix": "!",
   "host": "localhost",
   "port": 5432,
-  "user": "postgres",
-  "password": "2522",
+  "user": "bp_admin",
+  "password": "beerpaws",
   "dbname": "postgres"
 }
