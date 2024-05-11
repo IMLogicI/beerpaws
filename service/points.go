@@ -30,7 +30,19 @@ func NewPointsService(pointsStorage *storage.PointsStorage) *PointsService {
 }
 
 func (pointsService *PointsService) GetPointsRules() ([]models.PointRule, error) {
-	return pointsService.pointsStorage.GetPointsRules()
+	pointsRules, err := pointsService.pointsStorage.GetPointsRules()
+	if err != nil {
+		return nil, err
+	}
+
+	/*earnedPointsRules := make([]models.PointRule, 0)
+	for _, pointsRule := range pointsRules {
+		if pointsRule.IsEarned {
+			earnedPointsRules = append(earnedPointsRules, models.PointRule{})
+		}
+	}*/
+
+	return pointsRules, nil
 }
 
 func (pointsService *PointsService) MakePointRequest(user *models.User, ruleID int64, screenLink string) error {
