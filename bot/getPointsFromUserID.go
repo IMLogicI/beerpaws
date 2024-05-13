@@ -23,5 +23,9 @@ func (b *Bot) getPointsByDiscordID(
 		return 0, err
 	}
 
+	if user == nil {
+		return 0, fmt.Errorf("пользователь не зарегистрирован в системе")
+	}
+
 	return b.pointService.GetPointsByUserID(user.ID)
 }
