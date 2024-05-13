@@ -17,6 +17,7 @@ type PointRequest struct {
 	ScreenshotLink string `db:"screenshot_link"`
 	Approved       bool   `db:"approved"`
 	Closed         bool   `db:"closed"`
+	PointsCount    int64  `db:"points_count"`
 }
 
 type PointRequestForUser struct {
@@ -25,6 +26,7 @@ type PointRequestForUser struct {
 	UserName       string `db:"nickname"`
 	ScreenshotLink string `db:"screenshot_link"`
 	Approved       bool   `db:"approved"`
+	PointsCount    int64  `db:"points_count"`
 }
 
 type PointHistory struct {

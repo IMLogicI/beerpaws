@@ -16,7 +16,7 @@ const (
 
 type IPoints interface {
 	GetPointsRules() ([]models.PointRule, error)
-	MakePointRequest(pointRequest models.PointRequest) error
+	MakePointRequest(pointRequest models.PointRequest) (int64, error)
 	GetPointsRuleByID(ruleID int64) error
 	AddNewRule(newRule models.PointRule) error
 	GetOpenedRequests() ([]models.PointRequestForUser, error)
@@ -63,13 +63,21 @@ func (pointsStorage *PointsStorage) GetPointsRules() ([]models.PointRule, error)
 	return rules, nil
 }
 
-func (pointsStorage *PointsStorage) MakePointRequest(pointRequest models.PointRequest) error {
-	_, err := pointsStorage.dbConn.Queryx(fmt.Sprintf("%s (%d,%d,'%s',%v,%v)", consts.MakeRequest, pointRequest.RuleID, pointRequest.UserID, pointRequest.ScreenshotLink, false, false))
+func (pointsStorage *PointsStorage) MakePointRequest(pointRequest models.PointRequest) (int64, error) {
+	rows, err := pointsStorage.dbConn.Queryx(fmt.Sprintf("%s (%d,%d,'%s',%v,%v,%d) RETURNING id", consts.MakeRequest, pointRequest.RuleID, pointRequest.UserID, pointRequest.ScreenshotLink, pointRequest.Approved, pointRequest.Closed, pointRequest.PointsCount))
 	if err != nil {
-		return fmt.Errorf("make point request: %w", err)
+		return 0, fmt.Errorf("make point request: %w", err)
 	}
 
-	return nil
+	defer rows.Close()
+
+	for rows.Next() {
+		var requestID int64
+		err := rows.Scan(&requestID)
+		return requestID, err
+	}
+
+	return 0, nil
 }
 
 func (pointsStorage *PointsStorage) GetPointsRuleByID(ruleID int64) error {
@@ -165,11 +173,6 @@ func (pointsStorage *PointsStorage) GetRequestByID(requestID int64) (*models.Poi
 }
 
 func (pointsStorage *PointsStorage) GetPointsByUserID(userID int64) (int64, error) {
-	additionalPoints, err := pointsStorage.GetAdditionalPointsFromUserID(userID)
-	if err != nil {
-		log.Printf("get additional points: %v", err)
-	}
-
 	rows, err := pointsStorage.dbConn.Queryx(fmt.Sprintf(consts.GetPoints, userID))
 	if err != nil {
 		return 0, err
@@ -179,10 +182,10 @@ func (pointsStorage *PointsStorage) GetPointsByUserID(userID int64) (int64, erro
 	for rows.Next() {
 		var count int64
 		err := rows.Scan(&count)
-		return count + additionalPoints, err
+		return count, err
 	}
 
-	return additionalPoints, nil
+	return 0, nil
 }
 
 func (pointsStorage *PointsStorage) DeleteRule(ruleID int64) error {

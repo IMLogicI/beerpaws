@@ -9,14 +9,14 @@ import (
 
 type IPointsService interface {
 	GetPointsRules() ([]models.PointRule, error)
-	MakePointRequest(user *models.User, ruleID int64, screenLink string) error
+	MakePointRequest(user *models.User, ruleID int64, pointsCount int64, screenLink string) error
 	AddNewRule(newRule models.PointRule) error
 	GetOpenedRequests() ([]models.PointRequestForUser, error)
 	ApproveRequest(requestID int64) error
 	CloseRequest(requestID int64) error
 	GetPointsByUserID(userID int64) (int64, error)
 	DeleteRule(ruleID int64) error
-	SetAdditionalPoints(userID int64, count int64) error
+	SetAdditionalPoints(userID int64, count int64, reason string) error
 }
 
 type PointsService struct {
@@ -45,17 +45,22 @@ func (pointsService *PointsService) GetPointsRules() ([]models.PointRule, error)
 	return pointsRules, nil
 }
 
-func (pointsService *PointsService) MakePointRequest(user *models.User, ruleID int64, screenLink string) error {
+func (pointsService *PointsService) MakePointRequest(user *models.User, ruleID int64, pointsCount int64, screenLink string) error {
 	err := pointsService.pointsStorage.GetPointsRuleByID(ruleID)
 	if err != nil {
 		return err
 	}
 
-	return pointsService.pointsStorage.MakePointRequest(models.PointRequest{
+	_, err = pointsService.pointsStorage.MakePointRequest(models.PointRequest{
 		RuleID:         ruleID,
 		UserID:         user.ID,
 		ScreenshotLink: screenLink,
+		PointsCount:    pointsCount,
+		Approved:       false,
+		Closed:         false,
 	})
+
+	return err
 }
 
 func (pointsService *PointsService) AddNewRule(newRule models.PointRule) error {
@@ -107,6 +112,22 @@ func (pointsService *PointsService) DeleteRule(ruleID int64) error {
 	return pointsService.pointsStorage.DeleteRule(ruleID)
 }
 
-func (pointsService *PointsService) SetAdditionalPoints(userID int64, count int64) error {
-	return pointsService.pointsStorage.SetAdditionalPoints(userID, count)
+func (pointsService *PointsService) SetAdditionalPoints(userID int64, count int64, reason string) error {
+	id, err := pointsService.pointsStorage.MakePointRequest(models.PointRequest{
+		RuleID:         0,
+		UserID:         userID,
+		ScreenshotLink: reason,
+		PointsCount:    count,
+		Approved:       true,
+		Closed:         true,
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return pointsService.pointsStorage.AddPoints(models.PointHistory{
+		RequestID: id,
+		Time:      time.Now(),
+	})
 }

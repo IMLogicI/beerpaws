@@ -15,10 +15,11 @@ func (b *Bot) getOpenedRequestsHandler(s *discordgo.Session, m *discordgo.Messag
 	}
 
 	for _, request := range requests {
-		_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Номер запроса: %d\n Создатель: @%s\n За что: %s\n Ссылка на скрин: %s\n Подтверждено: %v",
+		_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Номер запроса: %d\n Создатель: @%s\n За что: %s\n Сколько баллов хочет: %d\n Ссылка на скрин: %s\n Подтверждено: %v\n ====================================",
 			request.ID,
 			request.UserName,
 			request.RuleName,
+			request.PointsCount,
 			request.ScreenshotLink,
 			request.Approved))
 	}

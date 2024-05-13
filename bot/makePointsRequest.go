@@ -10,7 +10,7 @@ import (
 
 func (b *Bot) makePointsRequestHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	values := strings.Split(m.Content, " ")
-	if len(values) < 3 {
+	if len(values) < 4 {
 		_, _ = s.ChannelMessageSend(m.ChannelID, "Введены не все параметры для этой команды!")
 		return
 	}
@@ -21,7 +21,13 @@ func (b *Bot) makePointsRequestHandler(s *discordgo.Session, m *discordgo.Messag
 		return
 	}
 
-	err = b.makePointsRequest(m.Author.ID, int64(ruleID), values[2], m.Author.Username)
+	pointsCount, err := strconv.Atoi(values[2])
+	if err != nil {
+		_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Введено некорректное кол-во очков! : %v", err))
+		return
+	}
+
+	err = b.makePointsRequest(m.Author.ID, int64(ruleID), int64(pointsCount), values[3], m.Author.Username)
 	if err != nil {
 		_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Что-то пошло не так! : %v", err))
 		return
@@ -33,6 +39,7 @@ func (b *Bot) makePointsRequestHandler(s *discordgo.Session, m *discordgo.Messag
 func (b *Bot) makePointsRequest(
 	discordID string,
 	ruleID int64,
+	pointsCount int64,
 	screenshotLink string,
 	discordUserName string,
 ) error {
@@ -57,5 +64,5 @@ func (b *Bot) makePointsRequest(
 		}
 	}
 
-	return b.pointService.MakePointRequest(user, ruleID, screenshotLink)
+	return b.pointService.MakePointRequest(user, ruleID, pointsCount, screenshotLink)
 }

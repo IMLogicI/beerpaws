@@ -9,8 +9,8 @@ import (
 )
 
 func (b *Bot) setAdditionalPointsHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
-	values := strings.Split(m.Content, " ")
-	if len(values) < 3 {
+	values := strings.Split(m.Content, " ; ")
+	if len(values) < 4 {
 		_, _ = s.ChannelMessageSend(m.ChannelID, "Введены не все параметры для этой команды!")
 		return
 	}
@@ -21,7 +21,7 @@ func (b *Bot) setAdditionalPointsHandler(s *discordgo.Session, m *discordgo.Mess
 		return
 	}
 
-	err = b.setAdditionalPoints(m.Author.ID, values[2], int64(count))
+	err = b.setAdditionalPoints(m.Author.ID, values[2], int64(count), values[3])
 	if err != nil {
 		_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Что-то пошло не так! : %v", err))
 		return
@@ -34,6 +34,7 @@ func (b *Bot) setAdditionalPoints(
 	discordID string,
 	targetDiscordID string,
 	count int64,
+	reason string,
 ) error {
 	if !b.isAdmin(discordID) {
 		return errors.New("вы не можете использовать эту команду")
@@ -48,5 +49,5 @@ func (b *Bot) setAdditionalPoints(
 		return errors.New("такой пользователь не зарегистирован")
 	}
 
-	return b.pointService.SetAdditionalPoints(targetUser.ID, count)
+	return b.pointService.SetAdditionalPoints(targetUser.ID, count, reason)
 }
