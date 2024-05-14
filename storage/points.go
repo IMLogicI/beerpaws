@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"beerpaws/domain"
 	"beerpaws/storage/consts"
 	"beerpaws/storage/models"
 	"errors"
@@ -18,7 +19,7 @@ type IPoints interface {
 	GetPointsRules() ([]models.PointRule, error)
 	MakePointRequest(pointRequest models.PointRequest) (int64, error)
 	GetPointsRuleByID(ruleID int64) error
-	AddNewRule(newRule models.PointRule) error
+	AddNewRule(newRule domain.PointRule) error
 	GetOpenedRequests() ([]models.PointRequestForUser, error)
 	ApproveRequest(requestID int64) error
 	AddPoints(pointsAdding models.PointHistory) error
@@ -94,8 +95,8 @@ func (pointsStorage *PointsStorage) GetPointsRuleByID(ruleID int64) error {
 	return errors.New("unknown rule")
 }
 
-func (pointsStorage *PointsStorage) AddNewRule(newRule models.PointRule) error {
-	_, err := pointsStorage.dbConn.Queryx(fmt.Sprintf("%s (%d,'%s','%s',%v)", consts.AddNewRule, newRule.Count, newRule.Name, newRule.Description, newRule.IsEarned))
+func (pointsStorage *PointsStorage) AddNewRule(newRule domain.PointRule) error {
+	_, err := pointsStorage.dbConn.Queryx(fmt.Sprintf("%s (%d,'%s','%s',%v,%d)", consts.AddNewRule, newRule.Count, newRule.Name, newRule.Description, newRule.IsEarned, *newRule.DaysActual))
 	if err != nil {
 		return fmt.Errorf("add new rule: %w", err)
 	}

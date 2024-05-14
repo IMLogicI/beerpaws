@@ -2,7 +2,6 @@ package bot
 
 import (
 	"beerpaws/domain"
-	"beerpaws/storage/models"
 	"errors"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
@@ -24,7 +23,18 @@ func (b *Bot) makeNewRuleHandler(s *discordgo.Session, m *discordgo.MessageCreat
 		return
 	}
 
-	err = b.makeNewRule(m.Author.ID, int64(count), values[2], values[3])
+	var daysActual *int64
+	if len(values) > 4 {
+		days, err := strconv.Atoi(values[1])
+		if err != nil || days < 1 {
+			_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Введено неверное кол-во дней! : %v", err))
+			return
+		}
+		dConv := int64(days)
+		daysActual = &dConv
+	}
+
+	err = b.makeNewRule(m.Author.ID, int64(count), values[2], values[3], daysActual)
 	if err != nil {
 		_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Что-то пошло не так! : %v", err))
 		return
@@ -38,15 +48,17 @@ func (b *Bot) makeNewRule(
 	count int64,
 	name string,
 	description string,
+	daysActual *int64,
 ) error {
 	if !b.isAdmin(discordID) {
 		return errors.New("вы не можете использовать эту команду")
 	}
 
-	return b.pointService.AddNewRule(models.PointRule{
+	return b.pointService.AddNewRule(domain.PointRule{
 		Name:        name,
 		Description: description,
 		Count:       count,
+		DaysActual:  daysActual,
 	})
 }
 

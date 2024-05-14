@@ -1,13 +1,17 @@
 package models
 
-import "time"
+import (
+	"database/sql"
+	"time"
+)
 
 type PointRule struct {
-	ID          int64  `db:"id"`
-	Name        string `db:"name"`
-	Description string `db:"description"`
-	Count       int64  `db:"count"`
-	IsEarned    bool   `db:"is_earned"`
+	ID          int64         `db:"id"`
+	Name        string        `db:"name"`
+	Description string        `db:"description"`
+	Count       int64         `db:"count"`
+	IsEarned    bool          `db:"is_earned"`
+	DaysActual  sql.NullInt64 `db:"days_actual"`
 }
 
 type PointRequest struct {

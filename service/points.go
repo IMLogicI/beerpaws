@@ -1,6 +1,7 @@
 package service
 
 import (
+	"beerpaws/domain"
 	"beerpaws/storage"
 	"beerpaws/storage/models"
 	"errors"
@@ -10,7 +11,7 @@ import (
 type IPointsService interface {
 	GetPointsRules() ([]models.PointRule, error)
 	MakePointRequest(user *models.User, ruleID int64, pointsCount int64, screenLink string) error
-	AddNewRule(newRule models.PointRule) error
+	AddNewRule(newRule domain.PointRule) error
 	GetOpenedRequests() ([]models.PointRequestForUser, error)
 	ApproveRequest(requestID int64) error
 	CloseRequest(requestID int64) error
@@ -63,7 +64,7 @@ func (pointsService *PointsService) MakePointRequest(user *models.User, ruleID i
 	return err
 }
 
-func (pointsService *PointsService) AddNewRule(newRule models.PointRule) error {
+func (pointsService *PointsService) AddNewRule(newRule domain.PointRule) error {
 	newRule.IsEarned = true
 	return pointsService.pointsStorage.AddNewRule(newRule)
 }
