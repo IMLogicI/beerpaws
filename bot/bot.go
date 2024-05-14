@@ -50,29 +50,29 @@ func (b *Bot) Run() {
 }
 
 func (b *Bot) messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
-	if m.Author.ID != b.BotID {
+	if _, ok := config.ChannelsID[m.ChannelID]; ok && m.Author.ID != b.BotID {
 		switch {
-		case strings.HasPrefix(m.Content, consts.GetRulePrefix):
+		case strings.HasPrefix(strings.ToLower(m.Content), consts.GetRulePrefix):
 			b.getRulesHandler(s, m)
-		case strings.HasPrefix(m.Content, consts.MakeRequestPrefix):
+		case strings.HasPrefix(strings.ToLower(m.Content), consts.MakeRequestPrefix):
 			b.makePointsRequestHandler(s, m)
-		case strings.HasPrefix(m.Content, consts.AddRulePrefix):
+		case strings.HasPrefix(strings.ToLower(m.Content), consts.AddRulePrefix):
 			b.makeNewRuleHandler(s, m)
-		case strings.HasPrefix(m.Content, consts.ViewOpenRequestsPrefix):
+		case strings.HasPrefix(strings.ToLower(m.Content), consts.ViewOpenRequestsPrefix):
 			b.getOpenedRequestsHandler(s, m)
-		case strings.HasPrefix(m.Content, consts.ApproveRequestPrefix):
+		case strings.HasPrefix(strings.ToLower(m.Content), consts.ApproveRequestPrefix):
 			b.approveRequestHandler(s, m)
-		case strings.HasPrefix(m.Content, consts.CloseRequestPrefix):
+		case strings.HasPrefix(strings.ToLower(m.Content), consts.CloseRequestPrefix):
 			b.closeRequestHandler(s, m)
-		case strings.HasPrefix(m.Content, consts.GetMyPointsPrefix):
+		case strings.HasPrefix(strings.ToLower(m.Content), consts.GetMyPointsPrefix):
 			b.getPointsByDiscordIDHandler(s, m)
-		case strings.HasPrefix(m.Content, consts.DeleteRulePrefix):
+		case strings.HasPrefix(strings.ToLower(m.Content), consts.DeleteRulePrefix):
 			b.deleteRuleHandler(s, m)
-		case strings.HasPrefix(m.Content, consts.HelpPrefix):
+		case strings.HasPrefix(strings.ToLower(m.Content), consts.HelpPrefix):
 			b.GetHelpMessageHandler(s, m)
-		case strings.HasPrefix(m.Content, consts.SetAdditionalPointPrefix):
+		case strings.HasPrefix(strings.ToLower(m.Content), consts.SetAdditionalPointPrefix):
 			b.setAdditionalPointsHandler(s, m)
-		case strings.HasPrefix(m.Content, consts.RegisterPrefix):
+		case strings.HasPrefix(strings.ToLower(m.Content), consts.RegisterPrefix):
 			b.registerHandler(s, m)
 		}
 	}
