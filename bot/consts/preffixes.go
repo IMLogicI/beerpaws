@@ -12,4 +12,5 @@ const (
 	HelpPrefix               = "!help"
 	SetAdditionalPointPrefix = "!setadditionalpoint"
 	RegisterPrefix           = "!register"
+	GetSpendRulesPrefix      = "!getspendrules"
 )

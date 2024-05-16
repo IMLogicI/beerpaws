@@ -74,6 +74,8 @@ func (b *Bot) messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 			b.setAdditionalPointsHandler(s, m)
 		case strings.HasPrefix(strings.ToLower(m.Content), consts.RegisterPrefix):
 			b.registerHandler(s, m)
+		case strings.HasPrefix(strings.ToLower(m.Content), consts.GetSpendRulesPrefix):
+			b.registerHandler(s, m)
 		}
 	}
 }
