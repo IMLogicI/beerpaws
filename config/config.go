@@ -7,11 +7,14 @@ import (
 )
 
 var (
-	Token      string
-	Prefix     string
-	config     *configStruct
-	DBConf     DBConfig
-	ChannelsID map[string]interface{}
+	Token           string
+	Prefix          string
+	config          *configStruct
+	DBConf          DBConfig
+	ChannelsID      map[string]interface{}
+	ApplicationID   string
+	GuildID         string
+	ChannelsAdminID string
 )
 
 type DBConfig struct {
@@ -23,14 +26,17 @@ type DBConfig struct {
 }
 
 type configStruct struct {
-	Token      string   `json:"token"`
-	Prefix     string   `json:"prefix"`
-	Host       string   `json:"host"`
-	Port       int64    `json:"port"`
-	User       string   `json:"user"`
-	Password   string   `json:"password"`
-	DBName     string   `json:"dbname"`
-	ChannelsID []string `json:"channels_id"`
+	Token           string   `json:"token"`
+	Prefix          string   `json:"prefix"`
+	Host            string   `json:"host"`
+	Port            int64    `json:"port"`
+	User            string   `json:"user"`
+	Password        string   `json:"password"`
+	DBName          string   `json:"dbname"`
+	ChannelsID      []string `json:"channels_id"`
+	ApplicationID   string   `json:"application_id"`
+	GuildID         string   `json:"guild_id"`
+	ChannelsAdminID string   `json:"channels_admin_id"`
 }
 
 func ReadConfig() error {
@@ -46,6 +52,9 @@ func ReadConfig() error {
 	}
 	Token = config.Token
 	Prefix = config.Prefix
+	ApplicationID = config.ApplicationID
+	GuildID = config.GuildID
+	ChannelsAdminID = config.ChannelsAdminID
 	ChannelsID = make(map[string]interface{})
 	for _, channelID := range config.ChannelsID {
 		ChannelsID[channelID] = ""

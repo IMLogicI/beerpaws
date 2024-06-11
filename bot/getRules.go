@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func (b *Bot) getRulesHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
+func getRules(s *discordgo.Session, i *discordgo.InteractionCreate, b *Bot) {
 	rules, err := b.pointService.GetPointsRules()
 	if err != nil {
 		log.Println(err)
@@ -23,15 +23,29 @@ func (b *Bot) getRulesHandler(s *discordgo.Session, m *discordgo.MessageCreate) 
 	}
 
 	message := strings.Builder{}
-	for i, rule := range earnRules {
+	for j, rule := range earnRules {
 		message.WriteString(fmt.Sprintf("Номер правила : %d . %s (%s). %d очков\n", rule.ID, rule.Name, rule.Description, rule.Count))
-		if (i+1)%ruleChunkSize == 0 {
-			_, _ = s.ChannelMessageSend(m.ChannelID, message.String())
+		if (j+1)%ruleChunkSize == 0 {
+			_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{
+					Flags:   discordgo.MessageFlagsEphemeral,
+					Content: message.String(),
+					Title:   "Правила",
+				},
+			})
 			message = strings.Builder{}
 		}
 	}
 
 	if message.Len() > 0 {
-		_, _ = s.ChannelMessageSend(m.ChannelID, message.String())
+		_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+			Type: discordgo.InteractionResponseChannelMessageWithSource,
+			Data: &discordgo.InteractionResponseData{
+				Flags:   discordgo.MessageFlagsEphemeral,
+				Content: message.String(),
+				Title:   "Правила",
+			},
+		})
 	}
 }

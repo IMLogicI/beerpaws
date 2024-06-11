@@ -4,10 +4,9 @@ import (
 	"beerpaws/bot/consts"
 	"beerpaws/config"
 	"beerpaws/service"
+	"github.com/bwmarrin/discordgo"
 	"log"
 	"strings"
-
-	"github.com/bwmarrin/discordgo"
 )
 
 const (
@@ -43,29 +42,63 @@ func (b *Bot) Run() {
 
 	b.BotID = user.ID
 	goBot.AddHandler(b.messageHandler)
+	goBot.AddHandler(b.interactionHandler)
+
+	_, err = goBot.ApplicationCommandCreate(config.ApplicationID, config.GuildID, &discordgo.ApplicationCommand{
+		Name:        consts.ButtonInteraction,
+		Description: "Добавить кнопку по которой можно отправить запрос",
+	})
+
+	_, err = goBot.ApplicationCommandCreate(config.ApplicationID, config.GuildID, &discordgo.ApplicationCommand{
+		Name:        consts.GetRulesInteraction,
+		Description: "Посмотреть все правила",
+	})
+
+	_, err = goBot.ApplicationCommandCreate(config.ApplicationID, config.GuildID, &discordgo.ApplicationCommand{
+		Name:        consts.GetMyPointsInteraction,
+		Description: "Посмотреть мои баллы",
+	})
+
+	if err != nil {
+		log.Fatalf("Cannot create slash command: %v", err)
+	}
+
 	err = goBot.Open()
 	if err != nil {
 		return
 	}
 }
 
+func (b *Bot) interactionHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	switch i.Type {
+	case discordgo.InteractionApplicationCommand:
+		if h, ok := commandsHandlers[i.ApplicationCommandData().Name]; ok {
+			h(s, i, b)
+		}
+	case discordgo.InteractionMessageComponent:
+		preffix := i.MessageComponentData().CustomID
+		if strings.Contains(i.MessageComponentData().CustomID, consts.AcceptRequestInteraction) {
+			preffix = consts.AcceptRequestInteraction
+		}
+
+		if strings.Contains(i.MessageComponentData().CustomID, consts.DeclineRequestInteraction) {
+			preffix = consts.DeclineRequestInteraction
+		}
+
+		if h, ok := componentsHandlers[preffix]; ok {
+			h(s, i, b)
+		}
+
+	case discordgo.InteractionModalSubmit:
+		sendResponsesToChannel(s, i, b)
+	}
+}
+
 func (b *Bot) messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if _, ok := config.ChannelsID[m.ChannelID]; ok && m.Author.ID != b.BotID {
 		switch {
-		case strings.HasPrefix(strings.ToLower(m.Content), consts.GetRulePrefix):
-			b.getRulesHandler(s, m)
-		case strings.HasPrefix(strings.ToLower(m.Content), consts.MakeRequestPrefix):
-			b.makePointsRequestHandler(s, m)
 		case strings.HasPrefix(strings.ToLower(m.Content), consts.AddRulePrefix):
 			b.makeNewRuleHandler(s, m)
-		case strings.HasPrefix(strings.ToLower(m.Content), consts.ViewOpenRequestsPrefix):
-			b.getOpenedRequestsHandler(s, m)
-		case strings.HasPrefix(strings.ToLower(m.Content), consts.ApproveRequestPrefix):
-			b.approveRequestHandler(s, m)
-		case strings.HasPrefix(strings.ToLower(m.Content), consts.CloseRequestPrefix):
-			b.closeRequestHandler(s, m)
-		case strings.HasPrefix(strings.ToLower(m.Content), consts.GetMyPointsPrefix):
-			b.getPointsByDiscordIDHandler(s, m)
 		case strings.HasPrefix(strings.ToLower(m.Content), consts.DeleteRulePrefix):
 			b.deleteRuleHandler(s, m)
 		case strings.HasPrefix(strings.ToLower(m.Content), consts.HelpPrefix):
@@ -74,8 +107,19 @@ func (b *Bot) messageHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
 			b.setAdditionalPointsHandler(s, m)
 		case strings.HasPrefix(strings.ToLower(m.Content), consts.RegisterPrefix):
 			b.registerHandler(s, m)
-		case strings.HasPrefix(strings.ToLower(m.Content), consts.GetSpendRulesPrefix):
-			b.registerHandler(s, m)
 		}
 	}
 }
+
+var (
+	componentsHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate, b *Bot){
+		consts.CreateRequestInteraction:  sendPointRequestForm,
+		consts.AcceptRequestInteraction:  acceptRequest,
+		consts.DeclineRequestInteraction: declineRequest,
+	}
+	commandsHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate, b *Bot){
+		consts.ButtonInteraction:      sendPointRequestButton,
+		consts.GetRulesInteraction:    getRules,
+		consts.GetMyPointsInteraction: getRulesInteraction,
+	}
+)

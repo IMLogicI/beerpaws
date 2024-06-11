@@ -1,16 +1,17 @@
 package consts
 
 const (
-	GetRulePrefix            = "!getpointrules"
-	MakeRequestPrefix        = "!makeearnrequest"
 	AddRulePrefix            = "!addearnrule"
-	ViewOpenRequestsPrefix   = "!viewopenrequests"
-	ApproveRequestPrefix     = "!approverequest"
-	CloseRequestPrefix       = "!closerequest"
 	GetMyPointsPrefix        = "!getmypoints"
 	DeleteRulePrefix         = "!deleterule"
 	HelpPrefix               = "!help"
 	SetAdditionalPointPrefix = "!setadditionalpoint"
 	RegisterPrefix           = "!register"
-	GetSpendRulesPrefix      = "!getspendrules"
+
+	ButtonInteraction         = "button"
+	CreateRequestInteraction  = "create_request"
+	AcceptRequestInteraction  = "accept_request"
+	DeclineRequestInteraction = "decline_request"
+	GetRulesInteraction       = "get_rules"
+	GetMyPointsInteraction    = "get_my_points"
 )

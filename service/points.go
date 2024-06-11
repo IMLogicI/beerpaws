@@ -10,7 +10,7 @@ import (
 
 type IPointsService interface {
 	GetPointsRules() ([]models.PointRule, error)
-	MakePointRequest(user *models.User, ruleID int64, pointsCount int64, screenLink string) error
+	MakePointRequest(user *models.User, ruleID int64, pointsCount int64, screenLink string) (int64, error)
 	AddNewRule(newRule domain.PointRule) error
 	GetOpenedRequests() ([]models.PointRequestForUser, error)
 	ApproveRequest(requestID int64) error
@@ -46,13 +46,13 @@ func (pointsService *PointsService) GetPointsRules() ([]models.PointRule, error)
 	return pointsRules, nil
 }
 
-func (pointsService *PointsService) MakePointRequest(user *models.User, ruleID int64, pointsCount int64, screenLink string) error {
+func (pointsService *PointsService) MakePointRequest(user *models.User, ruleID int64, pointsCount int64, screenLink string) (int64, error) {
 	err := pointsService.pointsStorage.GetPointsRuleByID(ruleID)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	_, err = pointsService.pointsStorage.MakePointRequest(models.PointRequest{
+	return pointsService.pointsStorage.MakePointRequest(models.PointRequest{
 		RuleID:         ruleID,
 		UserID:         user.ID,
 		ScreenshotLink: screenLink,
@@ -60,8 +60,6 @@ func (pointsService *PointsService) MakePointRequest(user *models.User, ruleID i
 		Approved:       false,
 		Closed:         false,
 	})
-
-	return err
 }
 
 func (pointsService *PointsService) AddNewRule(newRule domain.PointRule) error {

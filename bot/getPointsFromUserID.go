@@ -5,16 +5,6 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func (b *Bot) getPointsByDiscordIDHandler(s *discordgo.Session, m *discordgo.MessageCreate) {
-	count, err := b.getPointsByDiscordID(m.Author.ID)
-	if err != nil {
-		_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("Что-то пошло не так! : %v", err))
-		return
-	}
-
-	_, _ = s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("У вас на баллансе %d баллов", count))
-}
-
 func (b *Bot) getPointsByDiscordID(
 	discordID string,
 ) (int64, error) {
@@ -28,4 +18,19 @@ func (b *Bot) getPointsByDiscordID(
 	}
 
 	return b.pointService.GetPointsByUserID(user.ID)
+}
+
+func getRulesInteraction(s *discordgo.Session, i *discordgo.InteractionCreate, b *Bot) {
+	count, err := b.getPointsByDiscordID(i.Interaction.Member.User.ID)
+	if err != nil {
+		errInteraction(s, i)
+	}
+	_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Flags:   discordgo.MessageFlagsEphemeral,
+			Content: fmt.Sprintf("У вас на счету %v баллов", count),
+			Title:   "Баллы!",
+		},
+	})
 }
