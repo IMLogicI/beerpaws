@@ -22,9 +22,17 @@ func getRules(s *discordgo.Session, i *discordgo.InteractionCreate, b *Bot) {
 		}
 	}
 
+	rulesInteraction(s, i, earnRules)
+}
+
+func rulesInteraction(s *discordgo.Session, i *discordgo.InteractionCreate, earnRules []models.PointRule) {
+	text := "правила"
+	if len(earnRules) > 0 && earnRules[0].Count < 0 {
+		text = "лота"
+	}
 	message := strings.Builder{}
 	for j, rule := range earnRules {
-		message.WriteString(fmt.Sprintf("Номер правила : %d . %s (%s). %d очков\n", rule.ID, rule.Name, rule.Description, rule.Count))
+		message.WriteString(fmt.Sprintf("Номер %s : %d . %s (%s). %d очков\n", text, rule.ID, rule.Name, rule.Description, rule.Count))
 		if (j+1)%ruleChunkSize == 0 {
 			_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 				Type: discordgo.InteractionResponseChannelMessageWithSource,

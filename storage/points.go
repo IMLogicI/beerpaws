@@ -18,7 +18,7 @@ const (
 type IPoints interface {
 	GetPointsRules() ([]models.PointRule, error)
 	MakePointRequest(pointRequest models.PointRequest) (int64, error)
-	GetPointsRuleByID(ruleID int64) error
+	GetPointsRuleByID(ruleID int64) (models.PointRule, error)
 	AddNewRule(newRule domain.PointRule) error
 	GetOpenedRequests() ([]models.PointRequestForUser, error)
 	ApproveRequest(requestID int64) error
@@ -81,22 +81,24 @@ func (pointsStorage *PointsStorage) MakePointRequest(pointRequest models.PointRe
 	return 0, nil
 }
 
-func (pointsStorage *PointsStorage) GetPointsRuleByID(ruleID int64) error {
+func (pointsStorage *PointsStorage) GetPointsRuleByID(ruleID int64) (models.PointRule, error) {
 	rows, err := pointsStorage.dbConn.Queryx(fmt.Sprintf("%s WHERE \"%s\"=%d", consts.GetRules, consts.IDField, ruleID))
 	if err != nil {
-		return err
+		return models.PointRule{}, err
 	}
 
 	defer rows.Close()
 	for rows.Next() {
-		return nil
+		var rule models.PointRule
+		err := rows.StructScan(&rule)
+		return rule, err
 	}
 
-	return errors.New("unknown rule")
+	return models.PointRule{}, errors.New("unknown rule")
 }
 
 func (pointsStorage *PointsStorage) AddNewRule(newRule domain.PointRule) error {
-	_, err := pointsStorage.dbConn.Queryx(fmt.Sprintf("%s (%d,'%s','%s',%v,%d)", consts.AddNewRule, newRule.Count, newRule.Name, newRule.Description, newRule.IsEarned, *newRule.DaysActual))
+	_, err := pointsStorage.dbConn.Queryx(fmt.Sprintf("%s (%d,'%s','%s',%v,%d)", consts.AddNewRule, newRule.Count, newRule.Name, newRule.Description, newRule.IsEarned, newRule.DaysActual))
 	if err != nil {
 		return fmt.Errorf("add new rule: %w", err)
 	}

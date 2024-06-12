@@ -50,11 +50,6 @@ func (b *Bot) Run() {
 	})
 
 	_, err = goBot.ApplicationCommandCreate(config.ApplicationID, config.GuildID, &discordgo.ApplicationCommand{
-		Name:        consts.GetRulesInteraction,
-		Description: "Посмотреть все правила",
-	})
-
-	_, err = goBot.ApplicationCommandCreate(config.ApplicationID, config.GuildID, &discordgo.ApplicationCommand{
 		Name:        consts.GetMyPointsInteraction,
 		Description: "Посмотреть мои баллы",
 	})
@@ -90,7 +85,15 @@ func (b *Bot) interactionHandler(s *discordgo.Session, i *discordgo.InteractionC
 		}
 
 	case discordgo.InteractionModalSubmit:
-		sendResponsesToChannel(s, i, b)
+		data := i.ModalSubmitData()
+
+		switch {
+		case strings.HasPrefix(data.CustomID, consts.CreateRequestInteraction):
+			sendResponsesToChannel(s, i, b)
+		case strings.HasPrefix(data.CustomID, consts.CreateSpendRequestInteraction):
+			sendSpendResponseToChannel(s, i, b)
+		}
+
 	}
 }
 
@@ -116,10 +119,12 @@ var (
 		consts.CreateRequestInteraction:  sendPointRequestForm,
 		consts.AcceptRequestInteraction:  acceptRequest,
 		consts.DeclineRequestInteraction: declineRequest,
+		consts.EarnRulesInteraction:      getRules,
+		consts.SpendRulesInteraction:     getSpendRulesHandler,
+		consts.GetMyPointsInteraction:    getMyPointsInteraction,
+		consts.SpendInteraction:          sendPointSpendForm,
 	}
 	commandsHandlers = map[string]func(s *discordgo.Session, i *discordgo.InteractionCreate, b *Bot){
-		consts.ButtonInteraction:      sendPointRequestButton,
-		consts.GetRulesInteraction:    getRules,
-		consts.GetMyPointsInteraction: getRulesInteraction,
+		consts.ButtonInteraction: sendPointRequestButton,
 	}
 )

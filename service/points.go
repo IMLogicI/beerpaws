@@ -18,6 +18,7 @@ type IPointsService interface {
 	GetPointsByUserID(userID int64) (int64, error)
 	DeleteRule(ruleID int64) error
 	SetAdditionalPoints(userID int64, count int64, reason string) error
+	GetRuleByID(ruleID int64) (models.PointRule, error)
 }
 
 type PointsService struct {
@@ -36,18 +37,15 @@ func (pointsService *PointsService) GetPointsRules() ([]models.PointRule, error)
 		return nil, err
 	}
 
-	/*earnedPointsRules := make([]models.PointRule, 0)
-	for _, pointsRule := range pointsRules {
-		if pointsRule.IsEarned {
-			earnedPointsRules = append(earnedPointsRules, models.PointRule{})
-		}
-	}*/
-
 	return pointsRules, nil
 }
 
+func (pointsService *PointsService) GetRuleByID(ruleID int64) (models.PointRule, error) {
+	return pointsService.pointsStorage.GetPointsRuleByID(ruleID)
+}
+
 func (pointsService *PointsService) MakePointRequest(user *models.User, ruleID int64, pointsCount int64, screenLink string) (int64, error) {
-	err := pointsService.pointsStorage.GetPointsRuleByID(ruleID)
+	_, err := pointsService.pointsStorage.GetPointsRuleByID(ruleID)
 	if err != nil {
 		return 0, err
 	}

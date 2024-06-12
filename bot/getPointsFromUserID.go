@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"beerpaws/bot/consts"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 )
@@ -20,10 +21,10 @@ func (b *Bot) getPointsByDiscordID(
 	return b.pointService.GetPointsByUserID(user.ID)
 }
 
-func getRulesInteraction(s *discordgo.Session, i *discordgo.InteractionCreate, b *Bot) {
+func getMyPointsInteraction(s *discordgo.Session, i *discordgo.InteractionCreate, b *Bot) {
 	count, err := b.getPointsByDiscordID(i.Interaction.Member.User.ID)
 	if err != nil {
-		errInteraction(s, i)
+		messageInteraction(s, i, consts.SomethingGoesWrong)
 	}
 	_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,

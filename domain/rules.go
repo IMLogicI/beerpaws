@@ -6,5 +6,5 @@ type PointRule struct {
 	Description string
 	Count       int64
 	IsEarned    bool
-	DaysActual  *int64
+	DaysActual  int64
 }
