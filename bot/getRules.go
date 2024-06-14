@@ -31,19 +31,30 @@ func rulesInteraction(s *discordgo.Session, i *discordgo.InteractionCreate, earn
 		text = "лота"
 	}
 	message := strings.Builder{}
+	_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Flags:   discordgo.MessageFlagsEphemeral,
+			Content: "Далее представленны правила:",
+			Title:   "Правила",
+		},
+	})
 
-	for _, rule := range earnRules {
+	for j, rule := range earnRules {
 		message.WriteString(fmt.Sprintf("Номер %s : %d . %s (%s). %d очков\n", text, rule.ID, rule.Name, rule.Description, rule.Count))
+		if (j+1)%ruleChunkSize == 0 {
+			_, _ = s.ChannelMessageSendComplex(i.ChannelID, &discordgo.MessageSend{
+				Content: message.String(),
+				Flags:   discordgo.MessageFlagsEphemeral,
+			})
+			message = strings.Builder{}
+		}
 	}
 
 	if message.Len() > 0 {
-		_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Flags:   discordgo.MessageFlagsEphemeral,
-				Content: message.String(),
-				Title:   text,
-			},
+		_, _ = s.ChannelMessageSendComplex(i.ChannelID, &discordgo.MessageSend{
+			Content: message.String(),
+			Flags:   discordgo.MessageFlagsEphemeral,
 		})
 	}
 }

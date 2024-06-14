@@ -47,7 +47,7 @@ func sendPointRequestButton(s *discordgo.Session, i *discordgo.InteractionCreate
 	err := s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: "Чтобы подать запрос на получение баллов нажми на кнопку ниже.",
+			Content: "Ниже представленны кнопочки для ивента.\nЗа каждое получение очков, помимо очков вы так же получите ачивку (роль в дискорде). Сами ачивки скрыты до тех пор, пока первый человек не получит ту или иную. \nКроме тех пунктов, которые тут представлены для траты, топ 1 по очкам получит *скрытую доннатную награду* в конце ивента, а топ 2 - *премиум*. \nПри покупке плюшек очки в общей стате списываются.\n Ивент продлится до конца сезона\nПосле того, как посмотрели правила, перепизовите, пожалуйста, это сообщение командой /button",
 			// Buttons and other components are specified in Components field.
 			Components: []discordgo.MessageComponent{
 				// ActionRow is a container of all buttons within the same row.
