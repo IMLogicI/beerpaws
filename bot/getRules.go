@@ -31,19 +31,9 @@ func rulesInteraction(s *discordgo.Session, i *discordgo.InteractionCreate, earn
 		text = "лота"
 	}
 	message := strings.Builder{}
-	for j, rule := range earnRules {
+
+	for _, rule := range earnRules {
 		message.WriteString(fmt.Sprintf("Номер %s : %d . %s (%s). %d очков\n", text, rule.ID, rule.Name, rule.Description, rule.Count))
-		if (j+1)%ruleChunkSize == 0 {
-			_ = s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-				Type: discordgo.InteractionResponseChannelMessageWithSource,
-				Data: &discordgo.InteractionResponseData{
-					Flags:   discordgo.MessageFlagsEphemeral,
-					Content: message.String(),
-					Title:   "Правила",
-				},
-			})
-			message = strings.Builder{}
-		}
 	}
 
 	if message.Len() > 0 {
@@ -52,7 +42,7 @@ func rulesInteraction(s *discordgo.Session, i *discordgo.InteractionCreate, earn
 			Data: &discordgo.InteractionResponseData{
 				Flags:   discordgo.MessageFlagsEphemeral,
 				Content: message.String(),
-				Title:   "Правила",
+				Title:   text,
 			},
 		})
 	}
